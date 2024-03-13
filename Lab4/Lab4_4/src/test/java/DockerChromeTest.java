@@ -1,37 +1,28 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-
+import org.openqa.selenium.remote.RemoteWebDriver;
+import io.github.bonigarcia.seljup.DockerBrowser;
 import io.github.bonigarcia.seljup.SeleniumJupiter;
-
+import io.github.bonigarcia.seljup.BrowserType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 @ExtendWith(SeleniumJupiter.class)
-public class SeleniumTest {
-    private WebDriver driver;
+public class DockerChromeTest {
     private Homepage homepage;
     private Reservation reservation;
     private Confirmation confirmation;
 
-
-    public SeleniumTest(ChromeDriver driver) {
-        this.driver = driver;
-    }
-
     @BeforeEach
-    public void setUp() {
+    public void setUp(@DockerBrowser(type = BrowserType.CHROME) RemoteWebDriver driver) {
         driver.manage().window().maximize();
         homepage = new Homepage(driver);
         reservation = new Reservation(driver);
         confirmation = new Confirmation(driver);
     }
 
-
     @Test
-    public void teste() {
+    public void testWithChrome() {
         homepage.open();
         homepage.selectDeparture("Mexico City");
         homepage.selectDestination("London");
