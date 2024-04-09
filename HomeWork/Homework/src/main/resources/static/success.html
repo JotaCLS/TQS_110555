@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .message {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="message">
+        <h1>Reservation Successful!</h1>
+        <p>Your reservation has been successfully made. Reservation Token: <span id="reservationToken"></span></p>
+        <a href="/" class="btn">Back to Home</a>
+    </div>
+
+    <script>
+        // Função para fazer uma requisição GET para obter o ID da última reserva
+        function getLastreservationToken() {
+            fetch('/api/reservations/last')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch reservation ID');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Last reservation ID:', data);
+                    document.getElementById('reservationToken').textContent = data.token;
+                })
+                .catch(error => {
+                    console.error('Failed to fetch reservation ID:', error);
+                });
+        }
+
+        // Chama a função ao carregar a página
+        window.onload = getLastreservationToken;
+    </script>
+</body>
+</html>

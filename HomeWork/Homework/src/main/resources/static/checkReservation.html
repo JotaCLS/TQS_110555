@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Reservation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Reservation Details</h1>
+        <div id="reservationDetails"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const reservationToken = urlParams.get('reservationToken');
+        console.log('Reservation Token:', reservationToken);
+        if (reservationToken) {
+            fetch(`/api/checkReservation?reservationToken=${reservationToken}`)
+                .then(response => response.json())
+                .then(reservationData => {
+                    console.log('Reservation Data:', reservationData);
+                    // Extrai o ID do BusConnection da resposta da reserva
+                    const busConnectionId = reservationData.busConnectionId;
+                    console.log('BusConnection ID:', busConnectionId);
+                    // Faz uma nova requisição para obter os detalhes do BusConnection
+                    fetch(`/api/busConnections/${busConnectionId}`)
+                        .then(response => response.json())
+                        .then(busConnectionData => {
+                            // Mescla os detalhes da reserva e da conexão de ônibus
+                            const combinedData = { ...reservationData, ...busConnectionData };
+                            // Mostra os detalhes combinados na página
+                            renderDetails(combinedData);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching BusConnection details:', error);
+                        });
+                })
+                .catch(error => {
+                    console.error('Error fetching reservation details:', error);
+                });
+        } else {
+            alert('No reservation ID found in the URL.');
+        }
+    });
+
+    function renderDetails(data) {
+        const reservationDetailsDiv = document.getElementById('reservationDetails');
+        const table = document.createElement('table');
+        const headerRow = table.insertRow();
+        Object.keys(data).forEach(key => {
+            console.log(key);
+            const th = document.createElement('th');
+            th.textContent = key;
+            headerRow.appendChild(th);
+        });
+        const valueRow = table.insertRow();
+        Object.values(data).forEach(value => {
+            const td = document.createElement('td');
+            td.textContent = value;
+            valueRow.appendChild(td);
+        });
+        reservationDetailsDiv.appendChild(table);
+    }
+
+
+    </script>
+</body>
+</html>

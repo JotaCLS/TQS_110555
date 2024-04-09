@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Connections</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        #container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        select,
+        input[type="date"],
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #busConnectionsResult {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .bookBtn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            padding: 8px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            margin: 4px 2px;
+        }
+
+        .bookBtn:hover {
+            background-color: #45a049;
+        }
+
+        .checkBtn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .checkBtn:hover {
+            background-color: #0056b3;
+        }
+
+        #checkReservationDiv {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #checkReservationDiv label {
+            display: block;
+            margin-bottom: 5px;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        #checkReservationDiv input[type="text"] {
+            width: calc(100% - 120px);
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        #checkReservationDiv button {
+            width: 120px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Search Bus Connections</h1>
+        <form id="busConnectionsForm">
+            <label for="origin">Origin:</label>
+            <select id="origin" name="origin">
+                <option value=""></option>
+                <option value="Porto">Porto</option>
+                <option value="Lisboa">Lisboa</option>
+                <option value="Faro">Faro</option>
+            </select>
+
+            <label for="destination">Destination:</label>
+            <select id="destination" name="destination">
+                <option value=""></option>
+                <option value="Porto">Porto</option>
+                <option value="Lisboa">Lisboa</option>
+                <option value="Faro">Faro</option>
+            </select>
+
+            <label for="departureDate">Departure Date:</label>
+            <input type="date" id="departureDate" name="departureDate">
+
+            <!-- Adicionando a seleção da moeda -->
+            <label for="currency">Currency:</label>
+            <select id="currency" name="currency">
+                <option value="EUR">EUR</option> <!-- Euro (default) -->
+                <option value="USD">USD</option> <!-- Dólar americano -->
+                <option value="GBP">GBP</option> <!-- Libra esterlina -->
+                <!-- Adicione outras moedas conforme necessário -->
+            </select>
+
+            <button type="button" onclick="getBusConnections()">Search</button>
+        </form>
+
+        <div id="checkReservationDiv">
+            <label for="reservationToken">Enter Reservation Token:</label>
+            <input type="text" id="reservationToken" name="reservationToken" style="text-align: center;">
+            <button class="checkBtn" onclick="checkReservation()">Check Reservation</button>
+        </div>
+
+        <div id="busConnectionsResult"></div>
+    </div>
+
+    <script>
+        function getBusConnections() {
+        const origin = document.getElementById('origin').value;
+        const destination = document.getElementById('destination').value;
+        const departureDate = document.getElementById('departureDate').value;
+        const currency = document.getElementById('currency').value;
+
+        fetch(`/api/busConnections?origin=${origin}&destination=${destination}&departureDate=${departureDate}&currency=${currency}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                const resultDiv = document.getElementById('busConnectionsResult');
+                resultDiv.innerHTML = ''; // Clear previous results
+
+                const table = document.createElement('table');
+                const headerRow = table.insertRow();
+                ['Origin', 'Destination', 'Departure', 'Arrival', 'Price', 'Seats', '', ''].forEach(headerText => {
+                    const th = document.createElement('th');
+                    th.textContent = headerText;
+                    headerRow.appendChild(th);
+                });
+
+                data.forEach(connection => {
+                    const row = table.insertRow();
+                    ['origin', 'destination', 'departureDate', 'arrivalDate', 'price', 'seats'].forEach(key => {
+                        const cell = row.insertCell();
+                        const cellValue = key === 'departureDate' || key === 'arrivalDate' ? new Date(connection[key]).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : key === 'price' ? `${connection[key]} ${currency}` : connection[key];
+                        cell.textContent = cellValue;
+                    });
+
+                    const bookCell = row.insertCell();
+                    const bookBtn = document.createElement('button');
+                    bookBtn.textContent = 'Book Reservation';
+                    bookBtn.classList.add('bookBtn');
+                    bookBtn.addEventListener('click', () => bookReservation(connection.id, connection.seats));
+                    bookCell.appendChild(bookBtn);
+                });
+
+                resultDiv.appendChild(table);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+
+        function redirectToReservationPage(busConnectionId, seats) {
+            window.location.href = `reservation.html?busConnectionId=${busConnectionId}&seats=${seats}`;
+        }
+
+        function checkReservation() {
+            const reservationToken = document.getElementById('reservationToken').value;
+            if (reservationToken.trim() === '') {
+                alert('Please enter a reservation ID.');
+                return;
+            }
+            window.location.href = `checkReservation.html?reservationToken=${reservationToken}`;
+        }
+
+        function bookReservation(busConnectionId, seats) {
+            redirectToReservationPage(busConnectionId, seats);
+        }
+    </script>
+</body>
+</html>
